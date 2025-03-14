@@ -12,3 +12,25 @@ __tests__
 /android/src/test/
 /android/build/
 /example/
+
+# Example app
+/example
+
+# Development files
+.git
+.github
+.gitignore
+.eslintrc.js
+tsconfig.json
+bun.lock
+node_modules
+
+# Editor files
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db

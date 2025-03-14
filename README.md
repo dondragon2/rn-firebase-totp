@@ -4,12 +4,35 @@ A React Native module that provides Time-based One-Time Password (TOTP) authenti
 
 ## Installation
 
+### From npm (coming soon)
+
 ```bash
 npm install rn-firebase-totp
 # or
 yarn add rn-firebase-totp
 # or
 bun add rn-firebase-totp
+```
+
+### From GitHub Packages
+
+First, authenticate with GitHub Packages by creating a `.npmrc` file in your project root:
+
+```
+//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
+@dondragon2:registry=https://npm.pkg.github.com
+```
+
+Replace `YOUR_GITHUB_TOKEN` with a GitHub personal access token that has the `read:packages` scope.
+
+Then install the package:
+
+```bash
+npm install @dondragon2/rn-firebase-totp
+# or
+yarn add @dondragon2/rn-firebase-totp
+# or
+bun add @dondragon2/rn-firebase-totp
 ```
 
 ### Prerequisites
@@ -27,7 +50,7 @@ bun add @react-native-firebase/app@21.12.0 @react-native-firebase/auth@21.12.0
 ## Usage
 
 ```javascript
-import { FirebaseTOTPModule } from 'rn-firebase-totp';
+import { FirebaseTOTPModule } from '@dondragon2/rn-firebase-totp';
 
 // Enroll a user in TOTP
 const enrollUser = async (userId = null, accountName = null, issuer = null) => {

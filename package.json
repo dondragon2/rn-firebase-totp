@@ -1,5 +1,5 @@
 {
-  "name": "rn-firebase-totp",
+  "name": "@dondragon2/rn-firebase-totp",
   "version": "0.1.0",
   "description": "Provide enrolling into TOTP by firebase for Android and iOS",
   "main": "build/index.js",
@@ -13,8 +13,17 @@
     "prepublishOnly": "expo-module prepublishOnly",
     "expo-module": "expo-module",
     "open:ios": "xed example/ios",
-    "open:android": "open -a \"Android Studio\" example/android"
+    "open:android": "open -a \"Android Studio\" example/android",
+    "build-pack": "bun run build && bun pack"
   },
+  "files": [
+    "build",
+    "src",
+    "android",
+    "ios",
+    "README.md",
+    "LICENSE"
+  ],
   "keywords": [
     "react-native",
     "expo",
@@ -23,7 +32,10 @@
     "android",
     "ios"
   ],
-  "repository": "https://github.com/dondragon2/rn-firebase-totp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dondragon2/rn-firebase-totp.git"
+  },
   "bugs": {
     "url": "https://github.com/dondragon2/rn-firebase-totp/issues"
   },
@@ -50,5 +62,8 @@
   "platforms": [
     "ios",
     "android"
-  ]
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
 }
