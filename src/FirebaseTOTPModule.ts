@@ -15,11 +15,10 @@ declare class FirebaseTOTPModule extends NativeModule<FirebaseTOTPModuleEvents> 
   /**
    * Verifies a TOTP code for a user.
    * @param code The TOTP code to verify.
-   * @param verificationId The verification ID received during enrollment.
    * @param userId The Firebase user ID to verify. If not provided, uses the currently authenticated user.
    * @returns A promise that resolves with the verification result.
    */
-  verifyTOTPCode(code: string, verificationId: string, userId?: string): Promise<TOTPVerificationResult>;
+  verifyTOTPCode(code: string, userId?: string): Promise<TOTPVerificationResult>;
 
   /**
    * Disables TOTP for a user.

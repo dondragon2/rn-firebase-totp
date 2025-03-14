@@ -38,7 +38,6 @@ const enrollUser = async (userId = null, accountName = null, issuer = null) => {
     // result contains:
     // - secretKey: The secret key to be used in authenticator apps
     // - qrCodeUrl: URL for QR code that can be scanned by authenticator apps
-    // - verificationId: ID needed for verification
     
     return result;
   } catch (error) {
@@ -48,9 +47,9 @@ const enrollUser = async (userId = null, accountName = null, issuer = null) => {
 };
 
 // Verify a TOTP code
-const verifyTOTPCode = async (code, verificationId, userId = null) => {
+const verifyTOTPCode = async (code, userId = null) => {
   try {
-    const result = await FirebaseTOTPModule.verifyTOTPCode(code, verificationId, userId);
+    const result = await FirebaseTOTPModule.verifyTOTPCode(code, userId);
     console.log('TOTP Verification Result:', result);
     
     // result contains:
@@ -76,6 +75,12 @@ const disableTOTP = async (userId = null) => {
 };
 ```
 
+## Important Note on Verification
+
+**For iOS**: The TOTP verification process requires that you call `verifyTOTPCode` immediately after `enrollUserInTOTP` in the same session. This is because the TOTP secret is stored in memory between these calls. If your app is restarted or the module is reloaded, you will need to re-enroll the user.
+
+**For Android**: The implementation is a placeholder since Firebase Android SDK doesn't directly support TOTP yet.
+
 ## API Reference
 
 ### `enrollUserInTOTP(userId?: string, accountName?: string, issuer?: string): Promise<TOTPEnrollmentResult>`
@@ -92,17 +97,15 @@ Enrolls a user in TOTP authentication.
   {
     secretKey: string;    // The secret key to be used in authenticator apps
     qrCodeUrl: string;    // URL for QR code that can be scanned by authenticator apps
-    verificationId: string; // ID needed for verification
   }
   ```
 
-### `verifyTOTPCode(code: string, verificationId: string, userId?: string): Promise<TOTPVerificationResult>`
+### `verifyTOTPCode(code: string, userId?: string): Promise<TOTPVerificationResult>`
 
 Verifies a TOTP code for a user.
 
 - **Parameters:**
   - `code`: The TOTP code to verify.
-  - `verificationId`: The verification ID received during enrollment.
   - `userId` (optional): The Firebase user ID to verify. If not provided, uses the currently authenticated user.
   
 - **Returns:** A promise that resolves with the verification result:

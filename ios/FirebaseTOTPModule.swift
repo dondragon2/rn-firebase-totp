@@ -25,25 +25,29 @@ public class FirebaseTOTPModule: Module {
         let multiFactorSession = try await user.multiFactor.session()
         
         // Create a TOTP enrollment
-        let totpEnrollment = try await TOTPMultiFactorGenerator.generateSecret(with: multiFactorSession)
+        let totpSecret = try await TOTPMultiFactorGenerator.generateSecret(with: multiFactorSession)
         
-        // Get the shared secret and QR code URL
-        let sharedSecretKey = totpEnrollment.sharedSecretKey
+        // Get the shared secret
+        let sharedSecretKey = totpSecret.sharedSecretKey
         
         // Use provided parameters or defaults
         let finalAccountName = accountName ?? user.email ?? "default_account"
         let finalIssuer = issuer ?? "FirebaseTOTP"
         
-        let qrCodeURL = totpEnrollment.generateQRCodeURL(
+        // Generate QR code URL
+        let qrCodeURL = totpSecret.generateQRCodeURL(
             withAccountName: finalAccountName,
             issuer: finalIssuer
         )
         
+        // Store the TOTP secret for later verification
+        // In a real app, you might want to store this in a more secure way
+        self.totpSecretForVerification = totpSecret
+        
         // Return the enrollment information
         return [
           "secretKey": sharedSecretKey,
-          "qrCodeUrl": qrCodeURL.absoluteString,
-          "verificationId": totpEnrollment.verificationId
+          "qrCodeUrl": qrCodeURL
         ]
       } catch {
         self.sendEvent("onError", [
@@ -53,18 +57,29 @@ public class FirebaseTOTPModule: Module {
       }
     }
     
-    AsyncFunction("verifyTOTPCode") { (code: String, verificationId: String, userId: String?) in
+    AsyncFunction("verifyTOTPCode") { (code: String, userId: String?) in
       do {
         let user = try self.getFirebaseUser(userId)
         
-        // Create the credential
-        let credential = TOTPMultiFactorGenerator.credential(
-          withVerificationID: verificationId,
+        // Make sure we have a TOTP secret to verify against
+        guard let totpSecret = self.totpSecretForVerification else {
+          throw NSError(domain: "FirebaseTOTP", code: 4, userInfo: [NSLocalizedDescriptionKey: "No TOTP secret available for verification. Please enroll first."])
+        }
+        
+        // Create the assertion for enrollment
+        let multiFactorAssertion = TOTPMultiFactorGenerator.assertionForEnrollment(
+          with: totpSecret,
           oneTimePassword: code
         )
         
         // Enroll the user with the credential
-        try await user.multiFactor.enroll(with: credential, displayName: "TOTP")
+        try await user.multiFactor.enroll(
+          with: multiFactorAssertion,
+          displayName: "TOTP"
+        )
+        
+        // Clear the stored secret after successful verification
+        self.totpSecretForVerification = nil
         
         // Return success
         return [
@@ -103,6 +118,9 @@ public class FirebaseTOTPModule: Module {
       }
     }
   }
+  
+  // Store the TOTP secret between enrollment and verification
+  private var totpSecretForVerification: TOTPSecret?
   
   // Helper method to get the Firebase user
   private func getFirebaseUser(_ userId: String?) throws -> User {
