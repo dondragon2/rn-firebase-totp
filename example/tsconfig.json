@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "rn-firebase-totp": ["../src/index"],
+      "rn-firebase-totp/*": ["../src/*"]
+    }
+  }
+}
