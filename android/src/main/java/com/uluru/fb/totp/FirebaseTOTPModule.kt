@@ -24,7 +24,7 @@ class FirebaseTOTPModule : Module() {
 
     // Defines a JavaScript function that always returns a Promise and whose native code
     // is by default dispatched on the different thread than the JavaScript runtime runs on.
-    AsyncFunction("enrollUserInTOTP") { userId: String? ->
+    AsyncFunction("enrollUserInTOTP") { userId: String?, accountName: String?, issuer: String? ->
       try {
         val user = getFirebaseUser(userId)
         
@@ -38,8 +38,12 @@ class FirebaseTOTPModule : Module() {
         // Generate a verification ID (this would be used to link the TOTP with the user)
         val verificationId = java.util.UUID.randomUUID().toString()
         
+        // Use provided parameters or defaults
+        val finalAccountName = accountName ?: user.email ?: "user"
+        val finalIssuer = issuer ?: "FirebaseTOTP"
+        
         // Generate a QR code URL (using standard TOTP URI format)
-        val qrCodeUrl = generateTOTPQRCodeUrl(user.email ?: "user", "YourApp", secretKey)
+        val qrCodeUrl = generateTOTPQRCodeUrl(finalAccountName, finalIssuer, secretKey)
         
         // Return the enrollment information
         mapOf(

@@ -17,7 +17,7 @@ public class FirebaseTOTPModule: Module {
 
     // Defines a JavaScript function that always returns a Promise and whose native code
     // is by default dispatched on the different thread than the JavaScript runtime runs on.
-    AsyncFunction("enrollUserInTOTP") { (userId: String?) in
+    AsyncFunction("enrollUserInTOTP") { (userId: String?, accountName: String?, issuer: String?) in
       do {
         let user = try self.getFirebaseUser(userId)
         
@@ -29,7 +29,15 @@ public class FirebaseTOTPModule: Module {
         
         // Get the shared secret and QR code URL
         let sharedSecretKey = totpEnrollment.sharedSecretKey
-        let qrCodeURL = totpEnrollment.generateQRCodeURL()
+        
+        // Use provided parameters or defaults
+        let finalAccountName = accountName ?? user.email ?? "default_account"
+        let finalIssuer = issuer ?? "FirebaseTOTP"
+        
+        let qrCodeURL = totpEnrollment.generateQRCodeURL(
+            withAccountName: finalAccountName,
+            issuer: finalIssuer
+        )
         
         // Return the enrollment information
         return [
@@ -98,9 +106,7 @@ public class FirebaseTOTPModule: Module {
   
   // Helper method to get the Firebase user
   private func getFirebaseUser(_ userId: String?) throws -> User {
-    guard let auth = Auth.auth() else {
-      throw NSError(domain: "FirebaseTOTP", code: 1, userInfo: [NSLocalizedDescriptionKey: "Firebase Auth not initialized"])
-    }
+    let auth = Auth.auth()
     
     if let userId = userId, !userId.isEmpty {
       // In iOS, we can't directly get a user by ID from the client SDK

@@ -6,9 +6,11 @@ declare class FirebaseTOTPModule extends NativeModule<FirebaseTOTPModuleEvents> 
   /**
    * Enrolls a user in TOTP (Time-based One-Time Password) authentication.
    * @param userId The Firebase user ID to enroll. If not provided, uses the currently authenticated user.
+   * @param accountName Optional account name to use in the QR code URL. If not provided, uses the user's email.
+   * @param issuer Optional issuer name to use in the QR code URL. If not provided, uses "FirebaseTOTP".
    * @returns A promise that resolves with the enrollment result.
    */
-  enrollUserInTOTP(userId?: string): Promise<TOTPEnrollmentResult>;
+  enrollUserInTOTP(userId?: string, accountName?: string, issuer?: string): Promise<TOTPEnrollmentResult>;
 
   /**
    * Verifies a TOTP code for a user.

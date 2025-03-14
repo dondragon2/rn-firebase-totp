@@ -30,9 +30,9 @@ bun add @react-native-firebase/app@21.12.0 @react-native-firebase/auth@21.12.0
 import { FirebaseTOTPModule } from 'rn-firebase-totp';
 
 // Enroll a user in TOTP
-const enrollUser = async (userId = null) => {
+const enrollUser = async (userId = null, accountName = null, issuer = null) => {
   try {
-    const result = await FirebaseTOTPModule.enrollUserInTOTP(userId);
+    const result = await FirebaseTOTPModule.enrollUserInTOTP(userId, accountName, issuer);
     console.log('TOTP Enrollment Result:', result);
     
     // result contains:
@@ -78,12 +78,14 @@ const disableTOTP = async (userId = null) => {
 
 ## API Reference
 
-### `enrollUserInTOTP(userId?: string): Promise<TOTPEnrollmentResult>`
+### `enrollUserInTOTP(userId?: string, accountName?: string, issuer?: string): Promise<TOTPEnrollmentResult>`
 
 Enrolls a user in TOTP authentication.
 
 - **Parameters:**
   - `userId` (optional): The Firebase user ID to enroll. If not provided, uses the currently authenticated user.
+  - `accountName` (optional): The account name to use in the QR code URL. If not provided, uses the user's email.
+  - `issuer` (optional): The issuer name to use in the QR code URL. If not provided, uses "FirebaseTOTP".
   
 - **Returns:** A promise that resolves with the enrollment result:
   ```typescript
