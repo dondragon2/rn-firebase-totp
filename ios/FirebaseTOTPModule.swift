@@ -106,7 +106,7 @@ public class FirebaseTOTPModule: Module {
         let enrolledFactors = user.multiFactor.enrolledFactors
         
         // Find the TOTP factor
-        if let totpFactor = enrolledFactors.first(where: { $0.factorID == TOTPMultiFactorGenerator.factorID }) {
+        if let totpFactor = enrolledFactors.first(where: { $0.factorID == TOTPMultiFactorID }) {
           // Unenroll the TOTP factor
           try await user.multiFactor.unenroll(with: totpFactor)
         }
