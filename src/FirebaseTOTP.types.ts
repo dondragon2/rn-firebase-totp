@@ -1,19 +1,17 @@
-import type { StyleProp, ViewStyle } from 'react-native';
 
-export type OnLoadEventPayload = {
-  url: string;
+export type TOTPEnrollmentResult = {
+  secretKey: string;
+  qrCodeUrl: string;
+  verificationId: string;
+};
+
+export type TOTPVerificationResult = {
+  success: boolean;
+  message?: string;
 };
 
 export type FirebaseTOTPModuleEvents = {
-  onChange: (params: ChangeEventPayload) => void;
-};
-
-export type ChangeEventPayload = {
-  value: string;
-};
-
-export type FirebaseTOTPViewProps = {
-  url: string;
-  onLoad: (event: { nativeEvent: OnLoadEventPayload }) => void;
-  style?: StyleProp<ViewStyle>;
+  onEnrollmentComplete: (params: TOTPEnrollmentResult) => void;
+  onVerificationComplete: (params: TOTPVerificationResult) => void;
+  onError: (params: { error: string }) => void;
 };

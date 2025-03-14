@@ -1,4 +1,6 @@
 import ExpoModulesCore
+import FirebaseAuth
+import FirebaseCore
 
 public class FirebaseTOTPModule: Module {
   // Each module class must implement the definition function. The definition consists of components
@@ -10,39 +12,108 @@ public class FirebaseTOTPModule: Module {
     // The module will be accessible from `requireNativeModule('FirebaseTOTP')` in JavaScript.
     Name("FirebaseTOTP")
 
-    // Sets constant properties on the module. Can take a dictionary or a closure that returns a dictionary.
-    Constants([
-      "PI": Double.pi
-    ])
-
     // Defines event names that the module can send to JavaScript.
-    Events("onChange")
-
-    // Defines a JavaScript synchronous function that runs the native code on the JavaScript thread.
-    Function("hello") {
-      return "Hello world! 👋"
-    }
+    Events("onEnrollmentComplete", "onVerificationComplete", "onError")
 
     // Defines a JavaScript function that always returns a Promise and whose native code
     // is by default dispatched on the different thread than the JavaScript runtime runs on.
-    AsyncFunction("setValueAsync") { (value: String) in
-      // Send an event to JavaScript.
-      self.sendEvent("onChange", [
-        "value": value
-      ])
-    }
-
-    // Enables the module to be used as a native view. Definition components that are accepted as part of the
-    // view definition: Prop, Events.
-    View(FirebaseTOTPView.self) {
-      // Defines a setter for the `url` prop.
-      Prop("url") { (view: FirebaseTOTPView, url: URL) in
-        if view.webView.url != url {
-          view.webView.load(URLRequest(url: url))
-        }
+    AsyncFunction("enrollUserInTOTP") { (userId: String?) in
+      do {
+        let user = try self.getFirebaseUser(userId)
+        
+        // Start the TOTP enrollment process
+        let multiFactorSession = try await user.multiFactor.getSession()
+        
+        // Create a TOTP enrollment
+        let totpEnrollment = try await TOTPMultiFactorGenerator.generateSecret(with: multiFactorSession)
+        
+        // Get the shared secret and QR code URL
+        let sharedSecretKey = totpEnrollment.sharedSecretKey
+        let qrCodeURL = totpEnrollment.generateQRCodeURL()
+        
+        // Return the enrollment information
+        return [
+          "secretKey": sharedSecretKey,
+          "qrCodeUrl": qrCodeURL.absoluteString,
+          "verificationId": totpEnrollment.verificationId
+        ]
+      } catch {
+        self.sendEvent("onError", [
+          "error": error.localizedDescription
+        ])
+        throw error
       }
-
-      Events("onLoad")
+    }
+    
+    AsyncFunction("verifyTOTPCode") { (code: String, verificationId: String, userId: String?) in
+      do {
+        let user = try self.getFirebaseUser(userId)
+        
+        // Create the credential
+        let credential = TOTPMultiFactorGenerator.credential(
+          withVerificationID: verificationId,
+          oneTimePassword: code
+        )
+        
+        // Enroll the user with the credential
+        try await user.multiFactor.enroll(with: credential, displayName: "TOTP")
+        
+        // Return success
+        return [
+          "success": true,
+          "message": "TOTP verification successful"
+        ]
+      } catch {
+        self.sendEvent("onError", [
+          "error": error.localizedDescription
+        ])
+        
+        return [
+          "success": false,
+          "message": error.localizedDescription
+        ]
+      }
+    }
+    
+    AsyncFunction("disableTOTP") { (userId: String?) in
+      do {
+        let user = try self.getFirebaseUser(userId)
+        
+        // Get the enrolled factors
+        let enrolledFactors = user.multiFactor.enrolledFactors
+        
+        // Find the TOTP factor
+        if let totpFactor = enrolledFactors.first(where: { $0.factorID == TOTPMultiFactorGenerator.factorID }) {
+          // Unenroll the TOTP factor
+          try await user.multiFactor.unenroll(with: totpFactor)
+        }
+      } catch {
+        self.sendEvent("onError", [
+          "error": error.localizedDescription
+        ])
+        throw error
+      }
+    }
+  }
+  
+  // Helper method to get the Firebase user
+  private func getFirebaseUser(_ userId: String?) throws -> User {
+    guard let auth = Auth.auth() else {
+      throw NSError(domain: "FirebaseTOTP", code: 1, userInfo: [NSLocalizedDescriptionKey: "Firebase Auth not initialized"])
+    }
+    
+    if let userId = userId, !userId.isEmpty {
+      // Get the user by ID
+      guard let user = try? await auth.getUser(userId) else {
+        throw NSError(domain: "FirebaseTOTP", code: 2, userInfo: [NSLocalizedDescriptionKey: "User not found"])
+      }
+      return user
+    } else {
+      // Get the current user
+      guard let user = auth.currentUser else {
+        throw NSError(domain: "FirebaseTOTP", code: 3, userInfo: [NSLocalizedDescriptionKey: "No user is currently signed in"])
+      }
+      return user
     }
   }
 }
