@@ -22,7 +22,7 @@ public class FirebaseTOTPModule: Module {
         let user = try self.getFirebaseUser(userId)
         
         // Start the TOTP enrollment process
-        let multiFactorSession = try await user.multiFactor.getSession()
+        let multiFactorSession = try await user.multiFactor.session()
         
         // Create a TOTP enrollment
         let totpEnrollment = try await TOTPMultiFactorGenerator.generateSecret(with: multiFactorSession)
@@ -103,11 +103,12 @@ public class FirebaseTOTPModule: Module {
     }
     
     if let userId = userId, !userId.isEmpty {
-      // Get the user by ID
-      guard let user = try? await auth.getUser(userId) else {
-        throw NSError(domain: "FirebaseTOTP", code: 2, userInfo: [NSLocalizedDescriptionKey: "User not found"])
+      // In iOS, we can't directly get a user by ID from the client SDK
+      // We should use the current user and verify the ID matches
+      guard let currentUser = auth.currentUser, currentUser.uid == userId else {
+        throw NSError(domain: "FirebaseTOTP", code: 2, userInfo: [NSLocalizedDescriptionKey: "User not found or ID doesn't match current user"])
       }
-      return user
+      return currentUser
     } else {
       // Get the current user
       guard let user = auth.currentUser else {
