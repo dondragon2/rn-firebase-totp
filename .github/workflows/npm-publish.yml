@@ -23,14 +23,24 @@ jobs:
       - name: Install dependencies
         run: bun install
       
+      - name: Install expo-module-scripts globally
+        run: bun install -g expo-module-scripts
+      
       - name: Build package
-        run: bun run build
+        run: |
+          # Add node_modules/.bin to PATH
+          export PATH="$PATH:$(pwd)/node_modules/.bin"
+          bun run build
       
       - name: Publish to GitHub Packages
         run: |
           echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
           echo "@dondragon2:registry=https://npm.pkg.github.com" >> .npmrc
-          bun run prepublishOnly
-          bun publish --registry https://npm.pkg.github.com
+          
+          # Add node_modules/.bin to PATH
+          export PATH="$PATH:$(pwd)/node_modules/.bin"
+          
+          # Skip prepublishOnly script and publish directly
+          bun publish --registry https://npm.pkg.github.com --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
