@@ -19,8 +19,8 @@ Pod::Spec.new do |s|
   s.static_framework = true
 
   s.dependency 'ExpoModulesCore'
-  s.dependency 'Firebase/Auth', '~> 10.18.0'
-  s.dependency 'Firebase/Core', '~> 10.18.0'
+  s.dependency 'Firebase/Auth'
+  s.dependency 'Firebase/Core'
 
   # Swift/Objective-C compatibility
   s.pod_target_xcconfig = {
