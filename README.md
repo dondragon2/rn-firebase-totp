@@ -35,6 +35,26 @@ yarn add @dondragon2/rn-firebase-totp
 bun add @dondragon2/rn-firebase-totp
 ```
 
+### From a Tarball
+
+You can also install the package directly from a tarball:
+
+```bash
+# Install from a local tarball
+npm install /path/to/dondragon2-rn-firebase-totp-0.1.0.tgz
+# or
+yarn add /path/to/dondragon2-rn-firebase-totp-0.1.0.tgz
+# or
+bun add /path/to/dondragon2-rn-firebase-totp-0.1.0.tgz
+
+# Install from a GitHub release tarball
+npm install https://github.com/dondragon2/rn-firebase-totp/releases/download/v0.1.0/dondragon2-rn-firebase-totp-0.1.0.tgz
+# or
+yarn add https://github.com/dondragon2/rn-firebase-totp/releases/download/v0.1.0/dondragon2-rn-firebase-totp-0.1.0.tgz
+# or
+bun add https://github.com/dondragon2/rn-firebase-totp/releases/download/v0.1.0/dondragon2-rn-firebase-totp-0.1.0.tgz
+```
+
 ### Prerequisites
 
 This module requires the following Firebase modules to be installed (version 21.12.0 or compatible):

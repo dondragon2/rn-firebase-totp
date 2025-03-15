@@ -14,7 +14,8 @@
     "expo-module": "expo-module",
     "open:ios": "xed example/ios",
     "open:android": "open -a \"Android Studio\" example/android",
-    "build-pack": "bun run build && bun pack"
+    "build-pack": "bun run build && bun pack",
+    "create-tarball": "bun run build && npm pack"
   },
   "files": [
     "build",
